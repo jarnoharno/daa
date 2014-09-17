@@ -1,0 +1,230 @@
+\documentclass[a4paper,parskip=half]{scrartcl}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{clrscode3e}
+\usepackage[headsepline]{scrpage2}
+\usepackage{enumitem}
+
+\thispagestyle{scrplain}
+\setlength{\headsep}{0.5em}
+\setlength{\parskip}{0.3em}
+
+% add \Infty symbol
+
+\DeclareSymbolFont{Symbols}{OMS}{zplm}{m}{n}% Palatino
+\DeclareMathSymbol{\Infty}{\mathord}{Symbols}{"31}
+
+% solution environment macro
+
+\newenvironment{solution}[1]{
+%\begin{minipage}{\textwidth}
+\rule{\textwidth}{1pt}
+\begin{description}[leftmargin=3em, style=nextline, topsep=0em,
+font={\bfseries\rmfamily}]
+\item[#1]
+}{
+\end{description}
+%\end{minipage}
+}
+
+% header
+
+\ihead[\bf{Design and Analysis of Algorithms, Fall 2014\\Exercise II:
+Solutions}]{} \ohead[Jarno Leppänen\\014340691]{}
+
+% begin document
+
+\begin{document}
+
+\begin{solution}{II-1}
+
+Define matrix operator $(\star)$ as follows: $C = A \star B \iff c_{ij} =
+\min_{k} \left\{ a_{ik} + b_{kj} \right\}$. Now the shortest paths between all
+pairs of vertices can be written as $\Delta = L^{(n-1)} = L^{(n-2)} \star W =
+(L^{(n-3)} \star W) \star W = \underbrace{ ( \ldots (L^{(1)} \star W) \star
+\ldots \star W) \star W }_{n-1} = W^{n-1}$, where $\delta_{ij}$ is the shortest
+path between vertices $i$ and $j$, $l_{ij}^{(m)}$ is the shortest path between
+vertices $i$ and $j$ consisting of at most $m$ edges and $w_{ij}$ the length of
+the edge between vertices $i$ and $j$. The exponentiation in $W^{n-1}$ means
+that the operator $(\star)$ is applied $n-1$ times from left to right.
+
+The procedure for \proc{Slow-All-Pairs-Shortes-Paths} applies $(\star)$ in this
+order, but \proc{Faster-All-Pairs-Shortest-Paths} makes use of the presumed
+associativity of $(\star)$, that is, $A \star (B \star C) = (A \star B) \star
+C$, so that the computation can be reordered as $W^{2^{\lceil \lg(m-1) \rceil}}
+= \left( W^{2^{\lceil \lg(m-1 \rceil - 1}} \right) \star \left( W^{2^{\lceil
+\lg(m-1) \rceil - 1}} \right) = \ldots$ and only $\lceil \lg(n) \rceil$
+applications of $(\star)$ need to be performed.
+
+\end{solution}
+
+\begin{solution}{II-2}
+
+A monotonically increasing subsequence of a sequence $X$ is also a subsequence
+of $S$ which consists of elements of $X$ sorted in ascending order (proof
+omitted). Therefore the following algorithm for finding the longest
+monotonically increasing subsequence can be constructed:
+
+\begin{codebox}
+\Procname{$\proc{Longest-Monotonically-Increasing-Subsequence}(X)$}
+\li $S =
+\proc{Merge-Sort}(X)$
+\li \Return $\proc{LCS-Length}(X,S)$
+\end{codebox}
+
+The running time of \proc{Merge-Sort} is $\Theta(n \lg n)$, where $n$ is the
+length of sequence $X$. The running time of \proc{LCS-Length} is $\Theta(n^2)$
+(CLRS 15.4) which makes the overall running time of
+\proc{Longest-Monotonically-Increasing-Subsequence} $\Theta(n^2)$.
+
+\end{solution}
+
+\begin{solution}{II-3}
+
+Label the points in the set from $p_1$ to $p_n$ by their x-coordinate so that
+point $p_1$ is the leftmost point and $p_n$ is the rightmost.
+
+A bitonic path $P_{ij}, i \leq j$ includes all points from 1 to $j$ and
+consists of two parts: a leftgoing path from $p_i$ to $p_1$ and a rightgoing
+path from $p_1$ to $p_j$. By definition, the rightmost point $p_j$ is always on
+the rightgoing path.
+
+Let $b(i, j)$ be the shortest bitonic path $P_{ij}$ and $l(i, j)$ the euclidian
+distance between points $p_i$ and $p_j$. The shortest bitonic path for two
+points is simply the length of the path and therefore $b(1,2) = l(1,2)$.  Also,
+for $j > i+1$, $b(i, j) = b(i, j-1) + l(j-1,j)$ because point $p_{j-1}$ is part
+of the rightgoing path. If $p_{j-1}$ is on the leftgoing part, $p_j$ has a
+predecessor $p_k, k < j-1$ on the rightgoing path and the subpath from $p_k$ to
+$p_{j-1}$ must be the shortest bitonic path $b(k,j-1)$. Therefore $b(j-1,j) =
+\min_{k<j-1} \left\{ b(k,j-1) + l(k,j) \right\}$. For the degenerate case $b(j,
+j) = b(j-1,j) + l(j-1,j)$, because on the bitonic tour one of the adjacent
+points to $p_n$ must be $p_{n-1}$. From these recurrences the following
+algorithm can be constructed:
+
+\begin{codebox}
+\Procname{$\proc{Shortest-Bitonic-Tour}(X)$}
+\li $P = \proc{Merge-Sort}(X)$
+\li $b(1,2) = l(1,2)$
+\li \For $j = 3$ \To $n$ \Do
+\li   \For $i = 1$ \To $j-2$ \Do
+\li     $b(i,j) = b(i,j-1) + l(j-1,j)$ \End
+\li   $b(j-1,j) = \Infty$
+\li   \For $k = 1$ \To $j-2$ \Do
+\li     $b(j-1,j) = \min(b(j-1,j), b(k,j-1) + l(k,j))$ \End \End
+\li $b(n,n) = b(n-1,n)+l(n-1,n)$
+\li \Return $b$
+\end{codebox}
+
+The running time of \proc{Merge-Sort} is $O(\lg n)$. The outer loop in the
+procedure iterates $n-2$ times and the inner loops $n-2$ times at most which
+gives a total running time of $O(n^2)$ for \proc{Shortest-Bitonic-Tour}.
+
+\end{solution}
+
+\begin{solution}{II-4}
+
+Let $c(i,j) = M - j + i - \sum_{k=i}^j l_k$ be the extra characters left out
+when laying out words $i$ through $j$ on a line. Now define the penalty
+associated with this line as follows:
+\begin{aligned}
+p(i,j) =
+\begin{cases}
+\Infty & \text{if } c(i,j) < 0,\\
+0 & \text{if } j = n \text{ and } c(i,j) \geq 0,\\
+c(i, j)^3 & \text{otherwise}.
+\end{cases}
+\end{aligned}
+
+Note that if $c(i,j) < 0$, the words do not fit in the line.
+
+Let $b(j)$ be the total cost of an optimal layout of words $1$ through $j$.  If
+the last line begins with word $i \leq j$, the optimal cost would be $b(j) =
+b(i-1) + l(i,j)$. The cost of words from $1$ to $i$ must be optimal because
+otherwise the last line would not begin with $i$th word. We can therefore try
+every $i$ and define the total cost recursively as $b(j) = \min_{i \leq j}
+\left\{ b(i-1) + p(i,j) \right\}, j > 0$ and $b(0) = 0$.
+
+The extra characters $c(i,j)$ and line penalties $p(i,j)$ can be precalculated.
+The breaking first words $w(k)$ on each line $k$  must also be tracked while
+calculating optimal costs $b(j)$. The algorithm can now be given as follows:
+
+\begin{codebox}
+\Procname{$\proc{Optimal-Layout}(L)$}
+\li \For $i = 1$ \To $n$ \Do
+\li   $c(i,i) = M - l_i$
+\li   \For $j = i + 1$ \To $n$ \Do
+\li     $c(i,j) = c(i,j-1) - l_j - 1$ \End \End
+\li \For $i = 1 \To n$ \Do
+\li   \For $j = 1 \To n$ \Do
+\li     \If $c(i,j) < 0$ \Then
+\li       $p(i,j) = \Infty$
+\li     \ElseIf $j = n$ \textbf{and} $c(i,j) \geq 0$ \Then
+\li       $p(i,j) = 0$
+\li     \Else
+\li       $p(i,j) = c(i,j)^3$ \End \End \End
+\li $b(0) = 0$
+\li \For $j = 1 \To n$ \Do
+\li   $b(j) = \Infty$
+\li   \For $i = 1 \To j$ \Do
+\li     \If $b(j) > b(i-1) + p(i,j)$ \Then
+\li       $b(j) = b(j-1) + p(i,j)$
+\li       $w(j) = i$ \End \End \End
+\li \Return $b(n), W$
+\end{codebox}
+
+The running time of each loop and hence the total procedure
+\proc{Optimal-Layout} are $\Theta(n^2)$. The space complexity is also
+$\Theta(n^2)$.
+
+All lines can be printed with the following procedure given $W$ and
+called with the total number of words $n$:
+
+\begin{codebox}
+\Procname{$\proc{Print-Layout}(W,j)$}
+\li $i = p(j)$
+\li \If $i = 1$ \Then
+\li   $k = 1$
+\li \Else
+\li   $k = \proc{Print-Layout}(W,i-1) + 1$ \End
+\li \For $m = i \To j$ \Do
+\li   \textbf{print} $m$ \End
+\li \textbf{println}
+\li \Return $k$
+\end{codebox}
+
+Here \textbf{print} $m$ prints the word $m$ and \textbf{println} prints a
+line break. \
+
+\end{solution}
+
+\begin{solution}{II-5}
+
+If at any point during the procedure we encounter a negative weight on the
+diagonal of $L^{(m)}$ i.e. $l_{ii}^{(m)} < 0$ for any $i$, there exists a negative cycle
+containing $i$ that has at most $m$ edges. The procedure
+\proc{Faster-All-Pairs-Shortest-Paths} can therefore be modified as follows:
+
+\begin{codebox}
+\Procname{$\proc{Contains-Negative-Cycle}(W)$}
+\li $n = W.rows$
+\li $L^{(1)} = W$
+\li $m = 1$
+\li \While $m < n - 1$ \Do
+\li   $L^{(2m)} = \proc{Extend-Shortest-Paths}(L^{(m)}, L^{(m)})$
+\li   \For $i = 1 \To n$ \Do
+\li     \If $l_{ii}^{(2m)} < 0$ \Then
+\li       \Return true \End \End \End
+\li \Return false
+\end{codebox}
+
+The running time is dominated by \proc{Extend-Shortest-Paths} and therefore
+the same as in original, that is $\Theta(n^3 \lg n)$.
+
+\end{solution}
+
+\end{document}
