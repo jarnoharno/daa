@@ -5,14 +5,14 @@ BUILD = build
 $(BUILD)/%.pdf: %.tex
 	latexmk -pdf -outdir=$(BUILD) $<
 
-all: $(BUILD)/week1.pdf
+all: $(BUILD)/week2.pdf
 
 BUILD:
 	mkdir -p $(BUILD)
 
 doc-cont:
 	cd doc; latexmk -pdf -outdir=$(BUILD) -pvc -view=none \
-		-interaction=nonstopmode week1.tex
+		-interaction=nonstopmode week2.tex
 
 # clean targets
 
