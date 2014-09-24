@@ -132,14 +132,14 @@ Let $c(i,j) = M - j + i - \sum_{k=i}^j l_k$ be the extra characters left out
 when laying out words $i$ through $j$ on a line. Now define the penalty
 associated with this line as follows:
 
-\begin{aligned}
+$\begin{aligned}
 p(i,j) =
 \begin{cases}
 \Infty & \text{if } c(i,j) < 0,\\
 0 & \text{if } j = n \text{ and } c(i,j) \geq 0,\\
 c(i, j)^3 & \text{otherwise}.
 \end{cases}
-\end{aligned}
+\end{aligned}$
 
 Note that if $c(i,j) < 0$, the words do not fit in the line.
 
